@@ -1,0 +1,9 @@
+google-genai
+elevenlabs
+moviepy<2.0.0
+openai-whisper
+flask
+requests
+schedule
+pytrends
+python-dotenv

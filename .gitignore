@@ -1,0 +1,16 @@
+# Entorno virtual
+venv/
+ENV/
+
+# Variables de entorno (SEGURIDAD CRÍTICA)
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Archivos temporales y de salida del bot
+temp_audio.mp3
+temp_background.mp4
+output/
+bot_history.db

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Viral Bot Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .controles { background: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; }
+        .campo { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        input { background: #121212; border: 1px solid #444; color: white; padding: 12px; border-radius: 5px; outline: none; }
+        input:focus { border-color: #bb86fc; }
+        label { font-size: 0.9em; color: #888; }
+        .status { padding: 10px 20px; border-radius: 20px; font-weight: bold; }
+        .online { background: #2e7d32; }
+        .offline { background: #c62828; }
+        .tk-btn { background: #000; color: #fff; border: 1px solid #fff; padding: 10px; border-radius: 5px; text-decoration: none; font-size: 0.8em; }
+        .logout-btn { color: #ff5252; text-decoration: none; font-size: 0.7em; margin-left: 10px; border: 1px solid #ff5252; padding: 5px 10px; border-radius: 4px; }
+        .btn-accion { background: #bb86fc; color: #121212; border: none; padding: 12px 24px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; height: 43px; }
+        .btn-accion:hover { background: #9965f4; transform: scale(1.05); }
+        .btn-accion:disabled { background: #444; cursor: not-allowed; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        .card { background: #1e1e1e; border-radius: 10px; padding: 15px; border: 1px solid #333; }
+        video { width: 100%; border-radius: 5px; margin-top: 10px; }
+        .tema { font-size: 1.1em; color: #bb86fc; font-weight: bold; }
+        .meta { font-size: 0.8em; color: #888; margin-top: 10px; }
+        #loading-overlay { display: none; margin: 20px 0; padding: 15px; background: #333; border-radius: 5px; border-left: 5px solid #bb86fc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Viral Bot Control</h1>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="status {{ 'online' if tk_status == 'Conectado' else 'offline' }}">
+                TikTok: {{ tk_status }}
+            </div>
+            {% if tk_status == 'Conectado' %}
+                <a href="/logout/tiktok" class="logout-btn">❌ Cerrar Sesión</a>
+            {% else %}
+                <a href="/login/tiktok" class="tk-btn">🔗 Conectar Cuenta</a>
+            {% endif %}
+            <div class="status {{ 'online' if db_status == 'En línea' else 'offline' }}">
+                Sistema: {{ db_status }}
+            </div>
+        </div>
+    </div>
+
+    <div class="controles">
+        <div class="campo">
+            <label>Tema del video</label>
+            <input type="text" id="inputTema" placeholder="Ej: Curiosidades sobre Marte...">
+        </div>
+        <div class="campo">
+            <label>Estilo visual (Pexels)</label>
+            <input type="text" id="inputVisual" placeholder="Ej: space galaxy">
+        </div>
+        <button id="btnRun" class="btn-accion" onclick="generarVideo()">🚀 Lanzar Bot</button>
+    </div>
+
+    <div id="loading-overlay">
+        ⏳ <strong>El bot está trabajando:</strong> Generando guion, voz y editando el video... Por favor, espera.
+    </div>
+
+    <div class="grid">
+        {% for video in videos %}
+        <div class="card">
+            <div class="tema">{{ video['tema'] }}</div>
+            <div class="meta">Fecha: {{ video['fecha'] }}</div>
+            <div class="meta">Estado: <strong>{{ video['estado'] }}</strong></div>
+            <video controls>
+                <source src="/videos/{{ video['archivo_video'] }}" type="video/mp4">
+                Tu navegador no soporta video.
+            </video>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function generarVideo() {
+            const tema = document.getElementById('inputTema').value;
+            const visual = document.getElementById('inputVisual').value;
+            const btn = document.getElementById('btnRun');
+            const loader = document.getElementById('loading-overlay');
+            
+            btn.disabled = true;
+            loader.style.display = 'block';
+            
+            fetch('/run-manual', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tema: tema, visual: visual })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    // Recargar después de un tiempo prudente para ver el resultado
+                    setTimeout(() => location.reload(), 60000); 
+                })
+                .catch(err => {
+                    alert("Error al contactar con el bot.");
+                    btn.disabled = false;
+                    loader.style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>
